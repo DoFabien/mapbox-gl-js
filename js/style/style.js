@@ -10,7 +10,6 @@ const SpriteAtlas = require('../symbol/sprite_atlas');
 const LineAtlas = require('../render/line_atlas');
 const util = require('../util/util');
 const ajax = require('../util/ajax');
-const window = require('../util/window');
 const mapbox = require('../util/mapbox');
 const browser = require('../util/browser');
 const Dispatcher = require('../util/dispatcher');
@@ -24,6 +23,7 @@ const MapboxGLFunction = require('mapbox-gl-function');
 const getWorkerPool = require('../global_worker_pool');
 const deref = require('mapbox-gl-style-spec/lib/deref');
 const diff = require('mapbox-gl-style-spec/lib/diff');
+const complexTextPlugin = require('../source/complex_text_plugin');
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -76,6 +76,14 @@ class Style extends Evented {
 
         this.setEventedParent(map);
         this.fire('dataloading', {dataType: 'style'});
+
+        const self = this;
+        complexTextPlugin.registerForPluginAvailability((pluginBlobURL) => {
+            self.dispatcher.broadcast('loadComplexTextPlugin', pluginBlobURL, complexTextPlugin.errorCallback);
+            for (const id in self.sourceCaches) {
+                self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+            }
+        });
 
         const stylesheetLoaded = (err, stylesheet) => {
             if (err) {
@@ -776,19 +784,6 @@ class Style extends Evented {
             name: name,
             url: SourceType.workerSourceURL
         }, callback);
-    }
-
-    addWorkerPlugin(pluginURL, callback) {
-        ajax.getArrayBuffer(pluginURL, (err, response) => {
-            if (err) {
-                callback(err);
-            } else {
-                this.dispatcher.broadcast(
-                    'loadWorkerPlugin',
-                    window.URL.createObjectURL(new window.Blob([response]), {type: "text/javascript"}),
-                    callback);
-            }
-        });
     }
 
     getLight() {

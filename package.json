@@ -67,6 +67,7 @@
     "jsdom": "^9.4.2",
     "jsonlint": "^1.6.2",
     "lodash.template": "^4.4.0",
+    "mapbox-icu-js": "mapbox/mapbox-icu-js#c150dfe62199d86918d8ead91745d88154cfbec6",
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
     "nyc": "^8.3.0",

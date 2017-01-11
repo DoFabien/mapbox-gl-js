@@ -7,7 +7,7 @@ const VectorTileWorkerSource = require('./vector_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
 const assert = require('assert');
 
-const workerPlugins = require('./worker_plugins');
+const globalComplexTextPlugin = require('./complex_text_plugin');
 
 /**
  * @private
@@ -34,11 +34,12 @@ class Worker {
             this.workerSourceTypes[name] = WorkerSource;
         };
 
-        this.self.registerWorkerPlugin = (name, WorkerPlugin) => {
-            if (workerPlugins[name]) {
-                throw new Error(`Worker plugin with name "${name}" already registered.`);
+        this.self.registerComplexTextPlugin = (complexTextPlugin) => {
+            if (globalComplexTextPlugin.applyArabicShaping || globalComplexTextPlugin.processBidirectionalText) {
+                throw new Error('Complex text plugin already registered.');
             }
-            workerPlugins[name] = WorkerPlugin;
+            globalComplexTextPlugin['applyArabicShaping'] = complexTextPlugin.applyArabicShaping;
+            globalComplexTextPlugin['processBidirectionalText'] = complexTextPlugin.processBidirectionalText;
         };
     }
 
@@ -98,15 +99,11 @@ class Worker {
         }
     }
 
-    /**
-     * Like loadWorkerSource, except instead of loading an entirely new type
-     * of worker, this loads code into a shared location that can be used by
-     * other workers.
-     *  @private
-     */
-    loadWorkerPlugin(map, pluginURL, callback) {
+    loadComplexTextPlugin(map, pluginURL, callback) {
         try {
-            this.self.importScripts(pluginURL);
+            if (!globalComplexTextPlugin.applyArabicShaping && !globalComplexTextPlugin.processBidirectionalText) {
+                this.self.importScripts(pluginURL);
+            }
             callback();
         } catch (e) {
             callback(e);

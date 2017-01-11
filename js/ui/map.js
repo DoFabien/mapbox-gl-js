@@ -745,10 +745,6 @@ class Map extends Camera {
         return this.style.addSourceType(name, SourceType, callback);
     }
 
-    addWorkerPlugin(pluginURL, callback) {
-        return this.style.addWorkerPlugin(pluginURL, callback);
-    }
-
     /**
      * Removes a source from the map's style.
      *

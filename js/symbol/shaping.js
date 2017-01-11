@@ -2,7 +2,7 @@
 
 const scriptDetection = require('../util/script_detection');
 const verticalizePunctuation = require('../util/verticalize_punctuation');
-const workerPlugins = require('../source/worker_plugins');
+const complexTextPlugin = require('../source/complex_text_plugin');
 
 const WritingMode = {
     horizontal: 1,
@@ -58,8 +58,8 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     const shaping = new Shaping(positionedGlyphs, logicalInput, translate[1], translate[1], translate[0], translate[0], writingMode);
 
     let lines;
-    if (workerPlugins['mapbox-icu-js']) {
-        lines = workerPlugins['mapbox-icu-js'].processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    if (complexTextPlugin.processBidirectionalText) {
+        lines = complexTextPlugin.processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
     } else {
         lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
     }

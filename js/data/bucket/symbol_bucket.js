@@ -21,7 +21,7 @@ const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;
-const workerPlugins = require('../../source/worker_plugins');
+const complexTextPlugin = require('../../source/complex_text_plugin');
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -144,8 +144,8 @@ class SymbolBucket {
 
             let text;
             if (hasText) {
-                if (workerPlugins['mapbox-icu-js']) {
-                    text = workerPlugins['mapbox-icu-js'].applyArabicShaping(resolveText(feature, layout));
+                if (complexTextPlugin.applyArabicShaping) {
+                    text = complexTextPlugin.applyArabicShaping(resolveText(feature, layout));
                 } else {
                     text = resolveText(feature, layout);
                 }
