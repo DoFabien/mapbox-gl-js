@@ -10,6 +10,7 @@ const SpriteAtlas = require('../symbol/sprite_atlas');
 const LineAtlas = require('../render/line_atlas');
 const util = require('../util/util');
 const ajax = require('../util/ajax');
+const window = require('../util/window');
 const mapbox = require('../util/mapbox');
 const browser = require('../util/browser');
 const Dispatcher = require('../util/dispatcher');
@@ -775,6 +776,19 @@ class Style extends Evented {
             name: name,
             url: SourceType.workerSourceURL
         }, callback);
+    }
+
+    addWorkerPlugin(pluginURL, callback) {
+        ajax.getArrayBuffer(pluginURL, (err, response) => {
+            if (err) {
+                callback(err);
+            } else {
+                this.dispatcher.broadcast(
+                    'loadWorkerPlugin',
+                    window.URL.createObjectURL(new window.Blob([response]), {type: "text/javascript"}),
+                    callback);
+            }
+        });
     }
 
     getLight() {

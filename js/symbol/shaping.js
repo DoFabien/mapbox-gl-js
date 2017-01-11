@@ -1,9 +1,8 @@
 'use strict';
 
-const icu = require('mapbox-icu-js');
 const scriptDetection = require('../util/script_detection');
 const verticalizePunctuation = require('../util/verticalize_punctuation');
-
+const workerPlugins = require('../source/worker_plugins');
 
 const WritingMode = {
     horizontal: 1,
@@ -37,6 +36,20 @@ function Shaping(positionedGlyphs, text, top, bottom, left, right, writingMode) 
     this.writingMode = writingMode;
 }
 
+function breakLines(text, lineBreakPoints) {
+    const lines = [];
+    let start = 0;
+    for (const lineBreak of lineBreakPoints) {
+        lines.push(text.substring(start, lineBreak));
+        start = lineBreak;
+    }
+
+    if (start < text.length) {
+        lines.push(text.substring(start, text.length));
+    }
+    return lines;
+}
+
 function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, writingMode) {
     let logicalInput = text.trim();
     if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
@@ -44,7 +57,12 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     const positionedGlyphs = [];
     const shaping = new Shaping(positionedGlyphs, logicalInput, translate[1], translate[1], translate[0], translate[0], writingMode);
 
-    const lines = icu.processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    let lines;
+    if (workerPlugins['mapbox-icu-js']) {
+        lines = workerPlugins['mapbox-icu-js'].processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    } else {
+        lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    }
 
     shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight);
 

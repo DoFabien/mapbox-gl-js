@@ -7,6 +7,8 @@ const VectorTileWorkerSource = require('./vector_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
 const assert = require('assert');
 
+const workerPlugins = require('./worker_plugins');
+
 /**
  * @private
  */
@@ -30,6 +32,13 @@ class Worker {
                 throw new Error(`Worker source with name "${name}" already registered.`);
             }
             this.workerSourceTypes[name] = WorkerSource;
+        };
+
+        this.self.registerWorkerPlugin = (name, WorkerPlugin) => {
+            if (workerPlugins[name]) {
+                throw new Error(`Worker plugin with name "${name}" already registered.`);
+            }
+            workerPlugins[name] = WorkerPlugin;
         };
     }
 
@@ -83,6 +92,21 @@ class Worker {
     loadWorkerSource(map, params, callback) {
         try {
             this.self.importScripts(params.url);
+            callback();
+        } catch (e) {
+            callback(e);
+        }
+    }
+
+    /**
+     * Like loadWorkerSource, except instead of loading an entirely new type
+     * of worker, this loads code into a shared location that can be used by
+     * other workers.
+     *  @private
+     */
+    loadWorkerPlugin(map, pluginURL, callback) {
+        try {
+            this.self.importScripts(pluginURL);
             callback();
         } catch (e) {
             callback(e);

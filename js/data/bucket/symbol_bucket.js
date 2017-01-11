@@ -1,7 +1,6 @@
 'use strict';
 
 const Point = require('point-geometry');
-const icu = require('mapbox-icu-js');
 const ArrayGroup = require('../array_group');
 const BufferGroup = require('../buffer_group');
 const createVertexArrayType = require('../vertex_array_type');
@@ -22,6 +21,7 @@ const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const workerPlugins = require('../../source/worker_plugins');
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -144,7 +144,11 @@ class SymbolBucket {
 
             let text;
             if (hasText) {
-                text = icu.applyArabicShaping(resolveText(feature, layout));
+                if (workerPlugins['mapbox-icu-js']) {
+                    text = workerPlugins['mapbox-icu-js'].applyArabicShaping(resolveText(feature, layout));
+                } else {
+                    text = resolveText(feature, layout);
+                }
             }
 
             let icon;

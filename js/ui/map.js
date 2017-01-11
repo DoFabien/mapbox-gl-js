@@ -741,8 +741,12 @@ class Map extends Camera {
      * @param {Function} SourceType A {@link Source} constructor.
      * @param {Function} callback Called when the source type is ready or with an error argument if there is an error.
      */
-    addSourceType (name, SourceType, callback) {
+    addSourceType(name, SourceType, callback) {
         return this.style.addSourceType(name, SourceType, callback);
+    }
+
+    addWorkerPlugin(pluginURL, callback) {
+        return this.style.addWorkerPlugin(pluginURL, callback);
     }
 
     /**
