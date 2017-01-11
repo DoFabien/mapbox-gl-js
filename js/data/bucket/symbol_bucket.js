@@ -1,6 +1,7 @@
 'use strict';
 
 const Point = require('point-geometry');
+const icu = require('mapbox-icu-js');
 const ArrayGroup = require('../array_group');
 const BufferGroup = require('../buffer_group');
 const createVertexArrayType = require('../vertex_array_type');
@@ -143,7 +144,7 @@ class SymbolBucket {
 
             let text;
             if (hasText) {
-                text = resolveText(feature, layout);
+                text = icu.applyArabicShaping(resolveText(feature, layout));
             }
 
             let icon;
