@@ -1,6 +1,7 @@
 toc:
   - Map
   - accessToken
+  - setComplexTextPlugin  
   - supported
   - version
   - name: Geography
